@@ -359,7 +359,7 @@ export default function EditEmployeePage() {
 
 
   return (
-    <div className="bg-slate-50 min-h-screen">
+    <div className="bg-slate-50/70 min-h-screen">
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b p-4 shadow-sm flex items-center justify-between">
           <div>
               <h1 className="text-xl font-bold">Edit Employee</h1>
@@ -409,7 +409,7 @@ export default function EditEmployeePage() {
                     <div className="space-y-4">
                         {(employee.family && employee.family.length > 0) ? (
                             employee.family.map((member, index) => (
-                                <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-slate-50">
+                                <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-slate-50/80 backdrop-blur-sm">
                                     <div>
                                         <p className="font-medium">{member.name}</p>
                                         <p className="text-sm text-muted-foreground">{member.relation || 'N/A'}</p>

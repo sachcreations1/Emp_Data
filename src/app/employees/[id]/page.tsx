@@ -224,7 +224,7 @@ export default function EmployeeDetailPage() {
 
   return (
     <Dialog>
-      <div className="bg-slate-50 min-h-screen">
+      <div className="bg-slate-50/70 min-h-screen">
         <header className="sticky top-0 z-10 bg-destructive text-primary-foreground p-4 shadow-md flex items-center justify-between">
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
@@ -254,7 +254,7 @@ export default function EmployeeDetailPage() {
         </header>
 
         <main className="p-4 md:p-6 lg:p-8">
-            <Card>
+            <Card className="bg-white/90 backdrop-blur-sm">
             <CardHeader>
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                     <img src={employee.photo || `https://api.dicebear.com/8.x/initials/svg?seed=${employee.name}`} alt={employee.name} className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover bg-slate-200 ring-4 ring-primary/20" crossOrigin="anonymous" />
@@ -295,7 +295,7 @@ export default function EmployeeDetailPage() {
                             <h3 className="text-lg font-semibold mb-4 text-slate-800">Family Members</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {employee.family.map((member: any, index: number) => (
-                                    <div key={index} className="p-4 border rounded-xl shadow-sm bg-slate-50">
+                                    <div key={index} className="p-4 border rounded-xl shadow-sm bg-slate-50/80 backdrop-blur-sm">
                                         <p className="font-semibold text-primary mb-2">{member.name || 'N/A'}</p>
                                         <div className="space-y-3 text-sm">
                                             <DetailItem icon={Heart} label="Relation" value={member.relation} />

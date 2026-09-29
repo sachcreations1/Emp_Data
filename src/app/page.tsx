@@ -8,7 +8,7 @@ import { parseCSV } from "@/lib/csv";
 import type { Employee } from "@/lib/types";
 import { getTemplate, saveTemplate, Template } from "@/lib/template";
 import Papa from "papaparse";
-import { getTemplateFile, saveTemplateFile } from "@/lib/idb";
+import { saveTemplateFile } from "@/lib/idb";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,7 +66,6 @@ export default function EmployeesPage() {
   const [isBirthdayDialogOpen, setIsBirthdayDialogOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [appBackgroundUrl, setAppBackgroundUrl] = useState<string | null>(null);
   const [employeesWithBirthdayToday, setEmployeesWithBirthdayToday] = useState<Employee[]>([]);
 
   const [departmentFilter, setDepartmentFilter] = useState('All');
@@ -90,24 +89,6 @@ export default function EmployeesPage() {
     fetchData();
   }, [fetchData]);
 
-  useEffect(() => {
-    let objectUrl: string | null = null;
-    let isActive = true;
-
-    getTemplateFile('app-background').then(file => {
-      if (!file || !isActive) return;
-      objectUrl = URL.createObjectURL(file);
-      setAppBackgroundUrl(objectUrl);
-    }).catch(error => {
-      console.error('Failed to load app background image', error);
-    });
-
-    return () => {
-      isActive = false;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, []);
-  
   useEffect(() => {
     if (allEmployees.length === 0) {
       setEmployeesWithBirthdayToday([]);
@@ -259,10 +240,7 @@ export default function EmployeesPage() {
 
     try {
       await saveTemplateFile('app-background', file);
-      setAppBackgroundUrl(currentUrl => {
-        if (currentUrl) URL.revokeObjectURL(currentUrl);
-        return URL.createObjectURL(file);
-      });
+      window.dispatchEvent(new Event('stafflink-background-updated'));
       toast({ title: 'Background Updated', description: 'The app page background has been updated.' });
     } catch (error) {
       console.error('Failed to save app background image', error);
@@ -356,15 +334,7 @@ export default function EmployeesPage() {
   ];
 
   return (
-    <div
-      className="bg-gray-50 min-h-screen"
-      style={appBackgroundUrl ? {
-        backgroundImage: `linear-gradient(rgba(249, 250, 251, 0.88), rgba(249, 250, 251, 0.88)), url("${appBackgroundUrl}")`,
-        backgroundPosition: 'center',
-        backgroundSize: 'cover',
-        backgroundAttachment: 'fixed',
-      } : undefined}
-    >
+    <div className="bg-slate-50/70 min-h-dvh">
       {/* Sticky Header */}
       <header className="sticky top-0 z-10 bg-destructive text-primary-foreground p-4 shadow-md">
         {isSelectionMode ? (

@@ -239,7 +239,7 @@ export default function DesignerPage() {
       </div>
 
       {/* Main Content */}
-      <div className="bg-slate-100 p-4 lg:p-6 flex-1">
+      <div className="bg-slate-100/80 backdrop-blur-sm p-4 lg:p-6 flex-1">
         <Tabs defaultValue="front" value={activeTab} onValueChange={setActiveTab}>
           <div className="flex justify-center mb-6">
             <TabsList>

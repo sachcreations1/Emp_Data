@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
+import AppBackground from "@/components/AppBackground";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,9 +19,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn("bg-gray-50 antialiased", inter.className)}>
-        <div className="flex h-screen">
-          <main className="flex-1 overflow-auto">
+      <body className={cn("min-h-dvh bg-transparent antialiased", inter.className)}>
+        <AppBackground />
+        <div className="relative z-10 min-h-dvh bg-transparent">
+          <main className="min-h-dvh bg-transparent">
             {children}
           </main>
         </div>
