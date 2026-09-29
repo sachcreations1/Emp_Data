@@ -21,7 +21,7 @@ export default function EmployeeCard({ employee, isSelected, isSelectionMode, on
       onClick={onClick}
       onContextMenu={onContextMenu}
       className={cn(
-        "w-full bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-sm transition-all flex items-center gap-4 relative cursor-pointer",
+        "w-full bg-white/60 backdrop-blur-sm p-4 rounded-xl shadow-sm transition-all flex items-center gap-4 relative cursor-pointer",
         isSelected ? "ring-2 ring-primary bg-primary/10" : "hover:shadow-md"
       )}
     >

@@ -334,7 +334,7 @@ export default function EmployeesPage() {
   ];
 
   return (
-    <div className="bg-slate-50/70 min-h-dvh">
+    <div className="bg-transparent min-h-dvh">
       {/* Sticky Header */}
       <header className="sticky top-0 z-10 bg-destructive text-primary-foreground p-4 shadow-md">
         {isSelectionMode ? (

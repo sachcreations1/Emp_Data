@@ -40,7 +40,7 @@ export default function AppBackground() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center"
       style={backgroundUrl ? {
-        backgroundImage: `linear-gradient(rgba(248, 250, 252, 0.72), rgba(248, 250, 252, 0.72)), url("${backgroundUrl}")`,
+        backgroundImage: `linear-gradient(rgba(248, 250, 252, 0.18), rgba(248, 250, 252, 0.18)), url("${backgroundUrl}")`,
       } : undefined}
     />
   );

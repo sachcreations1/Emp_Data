@@ -112,7 +112,7 @@ export default function AnalyticsPage() {
   }, [employees]);
 
   return (
-    <div className="bg-slate-50/70 min-h-screen">
+    <div className="bg-transparent min-h-screen">
        <header className="sticky top-0 z-10 bg-destructive text-primary-foreground p-4 shadow-md flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-5 w-5" />
