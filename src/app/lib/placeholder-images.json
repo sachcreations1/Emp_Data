@@ -1,0 +1,23 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "imeu-seal",
+      "description": "Industrial Gear Logo",
+      "imageUrl": "https://picsum.photos/seed/industrial-gears-v1/500/500",
+      "imageHint": "industrial gears"
+    },
+    {
+      "id": "app-icon-192",
+      "description": "Industrial Icon 192x192",
+      "imageUrl": "https://picsum.photos/seed/industrial-spanner/192/192",
+      "imageHint": "industrial spanner"
+    },
+    {
+      "id": "app-icon-512",
+      "description": "Industrial Icon 512x512",
+      "imageUrl": "https://picsum.photos/seed/industrial-gears/512/512",
+      "imageHint": "industrial gears"
+    }
+  ]
+}
