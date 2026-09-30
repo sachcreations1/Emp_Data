@@ -163,15 +163,26 @@ export default function AnalyticsPage() {
 
         {/* Charts */}
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="col-span-1">
+          <Card className="col-span-1 min-w-0">
             <CardHeader>
               <CardTitle>AGE DISTRIBUTION</CardTitle>
               <CardDescription>5-YEAR INTERVAL ANALYSIS</CardDescription>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsBarChart data={chartData.age}>
-                  <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+              <ResponsiveContainer width="100%" height={330}>
+                <RechartsBarChart data={chartData.age} margin={{ top: 12, right: 8, bottom: 12, left: 0 }}>
+                  <XAxis
+                    dataKey="name"
+                    stroke="#888888"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    interval={0}
+                    minTickGap={0}
+                    angle={-40}
+                    textAnchor="end"
+                    height={72}
+                  />
                   <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
                   <Tooltip />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>

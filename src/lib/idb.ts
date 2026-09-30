@@ -32,13 +32,13 @@ const dbPromise: Promise<IDBPDatabase<StaffIDB>> | null =
       })
     : null;
 
-export const saveTemplateFile = async (key: string, file: File) => {
+export const saveImageFile = async (key: string, file: File) => {
   if (!dbPromise) return;
   const db = await dbPromise;
   await db.put('templates', file, key);
 };
 
-export const getTemplateFile = async (key: string): Promise<File | undefined> => {
+export const getImageFile = async (key: string): Promise<File | undefined> => {
   if (!dbPromise) return undefined;
   const db = await dbPromise;
   return await db.get('templates', key);

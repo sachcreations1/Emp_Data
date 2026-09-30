@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getTemplateFile } from '@/lib/idb';
+import { getImageFile } from '@/lib/idb';
 
 const BACKGROUND_UPDATED_EVENT = 'stafflink-background-updated';
 
@@ -13,7 +13,7 @@ export default function AppBackground() {
     let isActive = true;
 
     const loadBackground = async () => {
-      const file = await getTemplateFile('app-background');
+      const file = await getImageFile('app-background');
       if (!isActive) return;
 
       if (objectUrl) URL.revokeObjectURL(objectUrl);

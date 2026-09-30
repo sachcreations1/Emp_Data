@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
 import AppBackground from "@/components/AppBackground";
+import AppPinLock from "@/components/AppPinLock";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,7 +24,7 @@ export default function RootLayout({
         <AppBackground />
         <div className="relative z-10 min-h-dvh bg-transparent">
           <main className="min-h-dvh bg-transparent">
-            {children}
+            <AppPinLock>{children}</AppPinLock>
           </main>
         </div>
         <Toaster />

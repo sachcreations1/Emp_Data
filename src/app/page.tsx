@@ -1,14 +1,13 @@
 
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import { getEmployees, saveEmployees, addEmployee, saveCSVData, deleteEmployees, wipeAllEmployeeData } from "@/lib/db";
 import { parseCSV } from "@/lib/csv";
 import type { Employee } from "@/lib/types";
-import { getTemplate, saveTemplate, Template } from "@/lib/template";
 import Papa from "papaparse";
-import { saveTemplateFile } from "@/lib/idb";
+import { saveImageFile } from "@/lib/idb";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,7 +41,6 @@ import {
   UserPlus,
   Clock,
   Images,
-  CreditCard,
   Download,
   Trash2,
   Settings,
@@ -59,6 +57,13 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
+const readImageAsDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('Could not read image file.'));
+  reader.onerror = () => reject(reader.error || new Error('Could not read image file.'));
+  reader.readAsDataURL(file);
+});
+
 export default function EmployeesPage() {
   const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
   const [search, setSearch] = useState("");
@@ -67,6 +72,7 @@ export default function EmployeesPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [employeesWithBirthdayToday, setEmployeesWithBirthdayToday] = useState<Employee[]>([]);
+  const bulkPhotosInputRef = useRef<HTMLInputElement>(null);
 
   const [departmentFilter, setDepartmentFilter] = useState('All');
   const [designationFilter, setDesignationFilter] = useState('All');
@@ -88,6 +94,10 @@ export default function EmployeesPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    bulkPhotosInputRef.current?.setAttribute('webkitdirectory', '');
+  }, []);
 
   useEffect(() => {
     if (allEmployees.length === 0) {
@@ -180,6 +190,55 @@ export default function EmployeesPage() {
     }
   };
 
+  const handleBulkPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    try {
+      const employees = await getEmployees();
+      const employeesByCode = new Map(
+        employees.map(employee => [employee.empId.trim().toLowerCase(), employee])
+      );
+      const updatedEmployeeIds = new Set<string>();
+      let unmatchedImages = 0;
+
+      for (const file of files) {
+        if (!file.type.startsWith('image/')) continue;
+
+        const fileName = file.name.replace(/\.[^.]+$/, '').trim().toLowerCase();
+        const employee = employeesByCode.get(fileName);
+        if (!employee || updatedEmployeeIds.has(employee.id)) {
+          unmatchedImages++;
+          continue;
+        }
+
+        employee.photo = await readImageAsDataUrl(file);
+        updatedEmployeeIds.add(employee.id);
+      }
+
+      if (updatedEmployeeIds.size === 0) {
+        toast({
+          variant: 'destructive',
+          title: 'No Employee Photos Matched',
+          description: 'Image filenames must match an employee ID, such as 40000056.jpg.',
+        });
+        return;
+      }
+
+      await saveEmployees(employees);
+      setAllEmployees(employees);
+      toast({
+        title: 'Bulk Photo Upload Complete',
+        description: `${updatedEmployeeIds.size} employee photo(s) updated${unmatchedImages ? `; ${unmatchedImages} image(s) did not match` : ''}.`,
+      });
+    } catch (error) {
+      console.error('Failed to upload employee photos', error);
+      toast({ variant: 'destructive', title: 'Bulk Photo Upload Failed', description: 'Could not read or save the selected images.' });
+    } finally {
+      e.target.value = '';
+    }
+  };
+
   const handleDownloadCsv = async () => {
     const employees = await getEmployees();
     if (employees.length === 0) {
@@ -209,25 +268,6 @@ export default function EmployeesPage() {
       setIsMenuOpen(false);
   };
 
-  const handleTemplateUpload = async (e: React.ChangeEvent<HTMLInputElement>, side: 'front' | 'back') => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-        toast({ variant: 'destructive', title: 'Invalid File', description: 'Please upload an image file.' });
-        return;
-    }
-    
-    try {
-        await saveTemplateFile(side, file);
-        toast({ title: 'Success', description: `Template for ${side} side updated.` });
-    } catch (error) {
-        console.error("Failed to save template to IndexedDB", error);
-        toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save the image file. It might be too large or your browser may be in private mode.' });
-    }
-    e.target.value = ''; // Reset file input
-  };
-
   const handleAppBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -239,7 +279,7 @@ export default function EmployeesPage() {
     }
 
     try {
-      await saveTemplateFile('app-background', file);
+      await saveImageFile('app-background', file);
       window.dispatchEvent(new Event('stafflink-background-updated'));
       toast({ title: 'Background Updated', description: 'The app page background has been updated.' });
     } catch (error) {
@@ -323,10 +363,7 @@ export default function EmployeesPage() {
     { onClick: handleAddEmployee, icon: UserPlus, label: 'Add New Employee' },
     { href: '/retirement', icon: Clock, label: 'Retirement List' },
     { label: 'Upload CSV', icon: Upload, isUpload: true, action: handleCsvUpload, id: 'csv-upload-menu' },
-    { href: '#', icon: Images, label: 'Bulk Photos' },
-    { href: '/designer', icon: CreditCard, label: 'ID Card Designer' },
-    { label: 'Upload Front Template', icon: Upload, isTemplateUpload: true, action: (e: any) => handleTemplateUpload(e, 'front'), id: 'front-template-upload' },
-    { label: 'Upload Back Template', icon: Upload, isTemplateUpload: true, action: (e: any) => handleTemplateUpload(e, 'back'), id: 'back-template-upload' },
+    { label: 'Bulk Photos', icon: Images, isBulkPhotos: true, id: 'bulk-photos-upload' },
     { label: 'Upload App Background', icon: Upload, isBackgroundUpload: true, action: handleAppBackgroundUpload, id: 'app-background-upload' },
     { onClick: handleDownloadCsv, icon: Download, label: 'Download CSV' },
     { onClick: handleWipeData, icon: Trash2, label: 'Wipe All Records', className: "text-destructive" },
@@ -469,11 +506,19 @@ export default function EmployeesPage() {
                         </label>
                       );
                     }
-                    if (item.isTemplateUpload) {
-                       return (
+                    if (item.isBulkPhotos) {
+                      return (
                         <label htmlFor={item.id} key={index} className="cursor-pointer">
                           {content}
-                          <input type="file" id={item.id} className="hidden" accept="image/*" onChange={(e) => { (item.action as any)(e); setIsMenuOpen(false); }} />
+                          <input
+                            ref={bulkPhotosInputRef}
+                            type="file"
+                            id={item.id}
+                            className="hidden"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => { handleBulkPhotoUpload(e); setIsMenuOpen(false); }}
+                          />
                         </label>
                       );
                     }

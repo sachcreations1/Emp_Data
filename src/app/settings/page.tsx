@@ -9,6 +9,7 @@ import { syncToCloud, getCloudData } from '@/lib/sync';
 import { importData, exportData } from '@/lib/backup';
 import type { Employee } from '@/lib/types';
 import { Trash2, Upload, Download, UploadCloud, Loader2, CloudDownload } from 'lucide-react';
+import PinLockSettings from '@/components/PinLockSettings';
 
 export default function SettingsPage() {
     const { toast } = useToast();
@@ -120,6 +121,7 @@ export default function SettingsPage() {
                         </Button>
                     </CardContent>
                 </Card>
+                <PinLockSettings />
                 <Card className="border-destructive">
                     <CardHeader>
                         <CardTitle>Danger Zone</CardTitle>

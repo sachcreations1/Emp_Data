@@ -1,32 +1,22 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { getEmployee, deleteEmployees } from '@/lib/db';
 import type { Employee } from '@/lib/types';
-import type { Template } from '@/lib/template';
 import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ArrowLeft, Building, Briefcase, Cake, Droplets, Mail, Phone, CalendarDays, MapPin, Star, Smile, PhoneCall, Home, Hash, Heart, GraduationCap, Smartphone, UserCircle, Clock, CalendarOff, User, Trash2, CreditCard, Pencil, Download, Loader2 } from 'lucide-react';
-import PrintIDCard from '@/components/PrintIDCard';
-import { getTemplate } from '@/lib/template';
+import { ArrowLeft, Building, Briefcase, Cake, Droplets, Mail, Phone, CalendarDays, MapPin, Star, Smile, PhoneCall, Home, Hash, Heart, GraduationCap, Smartphone, UserCircle, Clock, CalendarOff, User, Trash2, Pencil } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import html2canvas from 'html2canvas';
-import { getTemplateFile } from '@/lib/idb';
 import { Separator } from '@/components/ui/separator';
 
 export default function EmployeeDetailPage() {
   const [employee, setEmployee] = useState<Employee | null>(null);
-  const [template, setTemplate] = useState<Template | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
   const { toast } = useToast();
-  const objectUrlRef = useRef<{ front?: string; back?: string }>({});
-  const [isDownloading, setIsDownloading] = useState(false);
-
   const [experience, setExperience] = useState<string>('N/A');
   const [retirementDate, setRetirementDate] = useState<string>('N/A');
   
@@ -57,37 +47,11 @@ export default function EmployeeDetailPage() {
           setEmployee(foundEmployee);
         }
       }
-
-      const positionalTemplate = getTemplate();
-      
-      try {
-        const frontFile = await getTemplateFile('front');
-        if (frontFile) {
-          const url = URL.createObjectURL(frontFile);
-          objectUrlRef.current.front = url;
-          positionalTemplate.front.backgroundImage = url;
-        }
-      } catch(e) { console.error("Could not load front template from IDB", e)}
-
-      try {
-        const backFile = await getTemplateFile('back');
-        if (backFile) {
-          const url = URL.createObjectURL(backFile);
-          objectUrlRef.current.back = url;
-          positionalTemplate.back.backgroundImage = url;
-        }
-      } catch(e) { console.error("Could not load back template from IDB", e)}
-
-      setTemplate(positionalTemplate);
       setIsLoaded(true);
     };
 
     loadData();
 
-    return () => {
-      if (objectUrlRef.current.front) URL.revokeObjectURL(objectUrlRef.current.front);
-      if (objectUrlRef.current.back) URL.revokeObjectURL(objectUrlRef.current.back);
-    };
   }, [id]);
 
   useEffect(() => {
@@ -142,69 +106,7 @@ export default function EmployeeDetailPage() {
     }
   };
 
-  const downloadIdCardSide = async (side: 'front' | 'back') => {
-    if (isDownloading) return;
-
-    const sideTitle = side.charAt(0).toUpperCase() + side.slice(1);
-    toast({ title: `Generating ${sideTitle} Card...`, description: "This may take a moment." });
-
-    setIsDownloading(true);
-
-    const elementId = side === 'front' ? 'card-export-front' : 'card-export-back';
-    const cardWrapper = document.getElementById(elementId);
-
-    if (!cardWrapper || !cardWrapper.firstChild) {
-        toast({ variant: "destructive", title: "Download Failed", description: `Could not find card element to export.` });
-        setIsDownloading(false);
-        return;
-    }
-
-    try {
-        const originalElement = cardWrapper.firstChild as HTMLElement;
-
-        // Clone the element to render it off-screen, ensuring a consistent layout context.
-        const clonedElement = originalElement.cloneNode(true) as HTMLElement;
-        
-        // Temporarily add the clone to the DOM off-screen. This is the key to preventing layout shifts.
-        clonedElement.style.position = 'absolute';
-        clonedElement.style.left = '-9999px';
-        document.body.appendChild(clonedElement);
-
-        const canvas = await html2canvas(clonedElement, { // Use the modified clone
-            scale: 16, // High resolution
-            useCORS: true,
-            backgroundColor: null,
-        });
-
-        // Clean up by removing the clone from the DOM
-        document.body.removeChild(clonedElement);
-
-        canvas.toBlob((blob) => {
-            if (!blob) {
-                toast({ variant: 'destructive', title: 'Download Failed', description: 'Could not generate the card image.' });
-                setIsDownloading(false);
-                return;
-            }
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `ID-Card-${employee?.empId}-${side}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(link.href);
-            toast({ title: `${sideTitle} Download Started`, description: `Your ${side} ID card image is downloading.` });
-            setIsDownloading(false);
-        }, 'image/png');
-
-    } catch (error) {
-        console.error(`Failed to download ${side} ID card:`, error);
-        toast({ variant: 'destructive', title: 'Download Failed', description: 'Could not generate the card image.' });
-        setIsDownloading(false);
-    }
-  }
-
-
-  if (!isLoaded || !template) {
+    if (!isLoaded) {
     return <div className="flex items-center justify-center h-full">Loading...</div>;
   }
 
@@ -223,7 +125,6 @@ export default function EmployeeDetailPage() {
   );
 
   return (
-    <Dialog>
       <div className="bg-transparent min-h-screen">
         <header className="sticky top-0 z-10 bg-destructive text-primary-foreground p-4 shadow-md flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -236,12 +137,6 @@ export default function EmployeeDetailPage() {
                 </div>
             </div>
             <div className="flex items-center gap-2">
-                <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon" className="hover:bg-white/20">
-                        <CreditCard className="h-4 w-4" />
-                        <span className="sr-only">View ID Card</span>
-                    </Button>
-                </DialogTrigger>
                 <Button variant="ghost" size="icon" onClick={() => router.push(`/employees/${employee.id}/edit`)} className="hover:bg-white/20">
                     <Pencil className="h-4 w-4" />
                     <span className="sr-only">Edit Employee</span>
@@ -314,32 +209,5 @@ export default function EmployeeDetailPage() {
             </Card>
         </main>
       </div>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-            <DialogTitle>ID Card for {employee.name}</DialogTitle>
-            <DialogDescription>Front and back preview of the employee ID card.</DialogDescription>
-        </DialogHeader>
-        <div className="max-h-[80vh] overflow-y-auto">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-6 p-4 bg-muted/50 rounded-lg">
-            <div id="card-export-front">
-              <PrintIDCard emp={employee} template={template} side="front" />
-            </div>
-            <div id="card-export-back">
-              <PrintIDCard emp={employee} template={template} side="back" />
-            </div>
-          </div>
-        </div>
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-            <Button onClick={() => downloadIdCardSide('front')} disabled={isDownloading}>
-                {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                Download Front
-            </Button>
-            <Button onClick={() => downloadIdCardSide('back')} variant="outline" disabled={isDownloading}>
-                 {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                Download Back
-            </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
